@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="poem.html"><strong aria-hidden="true">1.</strong> Poem</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="poem/quickstart.html"><strong aria-hidden="true">1.1.</strong> Quickstart</a></li><li class="chapter-item expanded "><a href="poem/endpoint.html"><strong aria-hidden="true">1.2.</strong> Endpoint</a></li><li class="chapter-item expanded "><a href="poem/routing.html"><strong aria-hidden="true">1.3.</strong> Routing</a></li><li class="chapter-item expanded "><a href="poem/extractors.html"><strong aria-hidden="true">1.4.</strong> Extractors</a></li><li class="chapter-item expanded "><a href="poem/responses.html"><strong aria-hidden="true">1.5.</strong> Responses</a></li><li class="chapter-item expanded "><a href="poem/handling_errors.html"><strong aria-hidden="true">1.6.</strong> Handling errors</a></li><li class="chapter-item expanded "><a href="poem/middleware.html"><strong aria-hidden="true">1.7.</strong> Middleware</a></li><li class="chapter-item expanded "><a href="poem/protocols.html"><strong aria-hidden="true">1.8.</strong> Protocols</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="poem/protocols/websocket.html"><strong aria-hidden="true">1.8.1.</strong> Websocket</a></li><li class="chapter-item expanded "><a href="poem/protocols/sse.html"><strong aria-hidden="true">1.8.2.</strong> Server-Sent Events (SSE)</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="openapi.html"><strong aria-hidden="true">2.</strong> OpenAPI</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="openapi/quickstart.html"><strong aria-hidden="true">2.1.</strong> Quickstart</a></li><li class="chapter-item expanded "><a href="openapi/type_system.html"><strong aria-hidden="true">2.2.</strong> Type System</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="openapi/type_system/basic_types.html"><strong aria-hidden="true">2.2.1.</strong> Basic types</a></li><li class="chapter-item expanded "><a href="openapi/type_system/enum.html"><strong aria-hidden="true">2.2.2.</strong> Enum</a></li><li class="chapter-item expanded "><a href="openapi/type_system/object.html"><strong aria-hidden="true">2.2.3.</strong> Object</a></li></ol></li><li class="chapter-item expanded "><a href="openapi/request_parameter.html"><strong aria-hidden="true">2.3.</strong> Request parameters</a></li><li class="chapter-item expanded "><a href="openapi/payload.html"><strong aria-hidden="true">2.4.</strong> Payload</a></li><li class="chapter-item expanded "><a href="openapi/request_bodies.html"><strong aria-hidden="true">2.5.</strong> Request bodies</a></li><li class="chapter-item expanded "><a href="openapi/request_responses.html"><strong aria-hidden="true">2.6.</strong> Request responses</a></li><li class="chapter-item expanded "><a href="openapi/validators.html"><strong aria-hidden="true">2.7.</strong> Validators</a></li><li class="chapter-item expanded "><a href="openapi/advanced.html"><strong aria-hidden="true">2.8.</strong> Advanced</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="openapi/advanced/custom_type.html"><strong aria-hidden="true">2.8.1.</strong> Custom Type</a></li><li class="chapter-item expanded "><a href="openapi/advanced/separated_apis.html"><strong aria-hidden="true">2.8.2.</strong> Separated APIs</a></li></ol></li></ol></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -144,9 +144,725 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<h2 id="why-do-this"><a class="header" href="#why-do-this">Why do this?</a></h2>
-<h2 id="benchmarks"><a class="header" href="#benchmarks">Benchmarks</a></h2>
+                        <h1 id="poem"><a class="header" href="#poem">Poem</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="quickstart"><a class="header" href="#quickstart">Quickstart</a></h1>
+<h2 id="add-dependency-libraries"><a class="header" href="#add-dependency-libraries">Add dependency libraries</a></h2>
+<pre><code class="language-toml">[dependencies]
+poem = &quot;0.4&quot;
+</code></pre>
+<h2 id="write-a-endpoint"><a class="header" href="#write-a-endpoint">Write a endpoint</a></h2>
+<p>The <code>handler</code> macro converts a function into a type that implements <code>Endpoint</code>, and the <code>Endpoint</code> trait represents
+a type that can handle HTTP requests.</p>
+<p>This function can receive one or more parameters, and each parameter is an extractor that can extract something from
+the HTTP request.</p>
+<p>The extractor implements the <code>FromRequest</code> trait, and you can also implement this trait to create your own extractor.</p>
+<p>The return value of the function must be a type that implements the <code>IntoResponse</code> trait. It can convert itself into an
+HTTP response through the <code>IntoResponse::into_response</code> method.</p>
+<p>The following function has an extractor, which extracts the <code>name</code> and <code>value</code> parameters from the query string of the 
+request uri. And return a <code>String</code>, the string will be converted into an HTTP response.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use serde::Deserialize;
+use poem::{handler, web::Query};
+
+#[derive(Deserialize)]
+struct Params {
+    name: String,
+    value: i32,
+}
+
+#[handler]
+async fn index(Query(params): Query&lt;Params&gt;) -&gt; String {
+    format!(&quot;{}={}&quot;, name, value)
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="server-http-server"><a class="header" href="#server-http-server">Server HTTP server</a></h2>
+<p>Let's start a server, it listens to <code>127.0.0.1:3000</code>, please ignore these <code>unwrap</code> calls, this is just an example.</p>
+<p>The <code>Server::run</code> function accepts any type that implements the <code>Endpoint</code> feature. In this example we don't have a 
+routing object, so any request path will be handled by the <code>index</code> function.</p>
+<pre><pre class="playground"><code class="language-rust">use poem::Server;
+
+#[tokio::main]
+async fn main() {
+    let server = Server::bind(&quot;127.0.0.1:3000&quot;).await.unwrap();
+    server.run(index).await.unwrap();
+}
+</code></pre></pre>
+<p>In this way, a simple example is implemented, we can run it and then use <code>curl</code> to do some tests.</p>
+<pre><code class="language-shell">&gt; curl http://localhost:3000?name=a&amp;value=10
+name=10
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="endpoint"><a class="header" href="#endpoint">Endpoint</a></h1>
+<p>An endpoint is a type that can handle HTTP requests. You can implement the <code>Endpoint</code> trait to create your own endpoint.
+<code>Poem</code> also provides some convenient functions to easily create a custom endpoint type.</p>
+<p>In the previous chapter, we learned how to use the <code>handler</code> macro to convert a function to an endpoint.</p>
+<p>Now let's see how to create your own endpoint by implementing the <code>Endpoint</code> trait.</p>
+<p>This is the definition of the <code>Endpoint</code> trait, you need to specify the type of <code>Output</code> and implement the <code>call</code> method.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>/// An HTTP request handler.
+#[async_trait]
+pub trait Endpoint: Send + Sync + 'static {
+    /// Represents the response of the endpoint.
+    type Output: IntoResponse;
+
+    /// Get the response to the request.
+    async fn call(&amp;self, req: Request) -&gt; Self::Output;
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Now we implement an <code>Endpoint</code>, which receives HTTP requests and outputs a string containing the request method and path.</p>
+<p>The <code>Output</code> associated type must be a type that implements the <code>IntoResponse</code> trait. Poem has been implemented by most
+commonly used types.</p>
+<p>Since <code>Endpoint</code> contains an asynchronous method <code>call</code>, we need to decorate it with the <code>async_trait</code> macro.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct MyEndpoint;
+
+#[async_trait]
+impl Endpoint for MyEndpoint {
+    type Output = String;
+    
+    async fn call(&amp;self, req: Request) -&gt; Self::Output {
+        format!(&quot;method={} path={}&quot;, req.method(), req.uri().path());
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="create-from-functions"><a class="header" href="#create-from-functions">Create from functions</a></h2>
+<p>You can use <code>poem::endpoint::make</code> and <code>poem::endpoint::make_sync</code> to create endpoints from asynchronous functions and
+synchronous functions.</p>
+<p>The following endpoint does the same thing:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let ep = poem::endpoint::make(|req| async move {
+    format!(&quot;method={} path={}&quot;, req.method(), req.uri().path())
+});
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="endpointext"><a class="header" href="#endpointext">EndpointExt</a></h2>
+<p>The <code>EndpointExt</code> trait provides some convenience functions for converting the input or output of the endpoint.</p>
+<ul>
+<li><code>EndpointExt::before</code> is used to convert the request.</li>
+<li><code>EndpointExt::after</code> is used to convert the output.</li>
+<li><code>EndpointExt::map_ok</code>, <code>EndpointExt::map_err</code>, <code>EndpointExt::and_then</code> are used to process the output of type <code>Result&lt;T&gt;</code>.</li>
+</ul>
+<h2 id="using-result-type"><a class="header" href="#using-result-type">Using Result type</a></h2>
+<p><code>Poem</code> also implements <code>IntoResponse</code> for the <code>poem::Result&lt;T&gt;</code> type, so it can also be used as the output type of the
+endpoint, so you can use <code>?</code> in the <code>call</code> method.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct MyEndpoint;
+
+#[async_trait]
+impl Endpoint for MyEndpoint {
+    type Output = poem::Result&lt;String&gt;;
+    
+    async fn call(&amp;self, req: Request) -&gt; Self::Output {
+        Ok(req.take_body().into_string().await?)
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>You can use the <code>EndpointExt::map_to_response</code> method to convert the output of the endpoint to the <code>Response</code> type, or 
+use the <code>EndpointExt::map_to_result</code> to convert the output to the <code>poem::Result&lt;Response&gt;</code> type.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let ep = MyEndpoint.map_to_response() // impl Endpoint&lt;Output = Response&gt;
+<span class="boring">}
+</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="routing"><a class="header" href="#routing">Routing</a></h1>
+<p>The routing object is used to dispatch the request of the specified path and method to the specified endpoint.</p>
+<p>The route object is actually an endpoint, which implements the <code>Endpoint</code> trait.</p>
+<p>In the following example, we dispatch the requests of <code>/a</code> and <code>'b</code> to different endpoints.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[handler]
+async fn a() -&gt; &amp;'static str { &quot;a&quot; }
+
+#[handler]
+async fn b() -&gt; &amp;'static str { &quot;b&quot; }
+
+let ep = poem::route()
+    .at(&quot;/a&quot;, a)
+    .at(&quot;/b&quot;, b);
+
+Server::bind(&quot;127.0.0.1:3000&quot;).await?.run(ep).await
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="capture-the-variables"><a class="header" href="#capture-the-variables">Capture the variables</a></h2>
+<p>Use <code>:&lt;name&gt;</code> to capture the value of the specified segment in the path, or use <code>*&lt;name&gt;</code> to capture all the values after 
+the specified prefix.</p>
+<p>In the following example, the captured values will be stored in the variable <code>value</code>, and you can use the path extractor to get them.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[handler]
+async fn a(Path(String): Path&lt;String&gt;) {} 
+
+let ep = poem::route()
+    .at(&quot;/a/:value/b&quot;, handler)
+    .at(&quot;/prefix/*value&quot;, handler);
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="nested"><a class="header" href="#nested">Nested</a></h2>
+<p>Sometimes we want to assign a path with a specified prefix to a specified endpoint, so that some functionally independent 
+components can be created.</p>
+<p>In the following example, the request path of the <code>hello</code> endpoint is <code>/api/hello</code>.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let api = poem::route().at(&quot;/hello&quot;, hello);
+let ep = api.nest(&quot;/api&quot;, api);
+<span class="boring">}
+</span></code></pre></pre>
+<p>Static file service is such an independent component.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let ep = route().nest(&quot;/files&quot;, Files::new(&quot;./static_files&quot;));
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="method-routing"><a class="header" href="#method-routing">Method routing</a></h2>
+<p>The routing objects introduced above can only be dispatched by some specified paths, but dispatch by paths and methods 
+is more common. <code>Poem</code> provides another route object <code>RouteMethod</code>, when it is combined with the <code>Route</code> object, it can 
+provide this ability.</p>
+<p><code>Poem</code> provides some convenient functions to create <code>RouteMethod</code> objects, they are all named after HTTP standard methods.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use poem::route::{get, post};
+
+let ep = poem::route()
+    .at(&quot;/users&quot;, get(get_user).post(create_user).delete(delete_user).put(update_user));
+<span class="boring">}
+</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="extractors"><a class="header" href="#extractors">Extractors</a></h1>
+<p><code>Poem</code> provides some commonly used extractors for extracting something from HTTP requests.</p>
+<p>You can use one or more extractors as the parameters of the function, up to 16.</p>
+<p>In the following example, the <code>index</code> function uses 3 extractors to extract the remote address, HTTP method and URI.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[handler]
+fn index(remote_addr: SocketAddr, method: Method, uri: &amp;Uri) {}
+<span class="boring">}
+</span></code></pre></pre>
+<h1 id="built-in-extractors"><a class="header" href="#built-in-extractors">Built-in extractors</a></h1>
+<ul>
+<li>
+<p><strong>Option&lt;T&gt;</strong></p>
+<p>Extracts <code>T</code> from the incoming request, returns <code>None</code> if it
+fails.</p>
+</li>
+<li>
+<p><strong>&amp;Request</strong></p>
+<p>Extracts the <code>Request</code> from the incoming request.</p>
+</li>
+<li>
+<p><strong>SocketAddr</strong></p>
+<p>Extracts the remote address <code>SocketAddr</code> from request.</p>
+</li>
+<li>
+<p><strong>IpAddr</strong></p>
+<p>Extracts the remote ip address <code>SocketAddr</code> from request.</p>
+</li>
+<li>
+<p><strong>Method</strong></p>
+<p>Extracts the <code>Method</code> from the incoming request.</p>
+</li>
+<li>
+<p><strong>Version</strong></p>
+<p>Extracts the <code>Version</code> from the incoming request.</p>
+</li>
+<li>
+<p><strong>&amp;Uri</strong></p>
+<p>Extracts the <code>Uri</code> from the incoming request.</p>
+</li>
+<li>
+<p><strong>&amp;HeaderMap</strong></p>
+<p>Extracts the <code>HeaderMap</code> from the incoming request.</p>
+</li>
+<li>
+<p><strong>Data&lt;&amp;T&gt;</strong></p>
+<p>Extracts the <code>Data</code> from the incoming request.</p>
+</li>
+<li>
+<p><strong>TypedHeader&lt;T&gt;</strong></p>
+<p>Extracts the <code>TypedHeader</code> from the incoming request.</p>
+</li>
+<li>
+<p><strong>Path&lt;T&gt;</strong></p>
+<p>Extracts the <code>Path</code> from the incoming request.</p>
+</li>
+<li>
+<p><strong>Query&lt;T&gt;</strong></p>
+<p>Extracts the <code>Query</code> from the incoming request.</p>
+</li>
+<li>
+<p><strong>Form&lt;T&gt;</strong></p>
+<p>Extracts the <code>Form</code> from the incoming request.</p>
+</li>
+<li>
+<p><strong>Json&lt;T&gt;</strong></p>
+<p>Extracts the <code>Json</code> from the incoming request.</p>
+<p><em>This extractor will take over the requested body, so you should avoid
+using multiple extractors of this type in one handler.</em></p>
+</li>
+<li>
+<p><strong>TempFile</strong></p>
+<p>Extracts the <code>TempFile</code> from the incoming request.</p>
+<p><em>This extractor will take over the requested body, so you should avoid
+using multiple extractors of this type in one handler.</em></p>
+</li>
+<li>
+<p><strong>Multipart</strong></p>
+<p>Extracts the <code>Multipart</code> from the incoming request.</p>
+<p><em>This extractor will take over the requested body, so you should avoid
+using multiple extractors of this type in one handler.</em></p>
+</li>
+<li>
+<p><strong>Body</strong></p>
+<p>Extracts the <code>Body</code> from the incoming request.</p>
+<p><em>This extractor will take over the requested body, so you should avoid
+using multiple extractors of this type in one handler.</em></p>
+</li>
+<li>
+<p><strong>String</strong></p>
+<p>Extracts the body from the incoming request and parse it into utf8 string.</p>
+<p><em>This extractor will take over the requested body, so you should avoid
+using multiple extractors of this type in one handler.</em></p>
+</li>
+<li>
+<p><strong>Vec&lt;u8&gt;</strong></p>
+<p>Extracts the body from the incoming request and collect it into
+<code>Vec&lt;u8&gt;</code>.</p>
+<p><em>This extractor will take over the requested body, so you should avoid
+using multiple extractors of this type in one handler.</em></p>
+</li>
+<li>
+<p><strong>Bytes</strong></p>
+<p>Extracts the body from the incoming request and collect it into
+<code>Bytes</code>.</p>
+<p><em>This extractor will take over the requested body, so you should avoid
+using multiple extractors of this type in one handler.</em></p>
+</li>
+<li>
+<p><strong>WebSocket</strong></p>
+<p>Ready to accept a websocket connection.</p>
+</li>
+</ul>
+<h2 id="handling-of-extractor-errors"><a class="header" href="#handling-of-extractor-errors">Handling of extractor errors</a></h2>
+<p>By default, the extractor will return a <code>400 Bad Request</code> when an error occurs, but sometimes you may want to change 
+this behavior, so you can handle the error yourself.</p>
+<p>In the following example, when the <code>Query</code> extractor fails, it will return a <code>500 Internal Server Error</code> response and the reason for the error.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use poem::web::Query;
+use poem::error::ParseQueryError;
+use poem::{IntoResponse, Response};
+use poem::http::StatusCode;
+
+#[derive(Debug, Deserialize)]
+struct Params {
+    name: String,
+}
+
+#[handler]
+fn index(res: Result&lt;Query&lt;Params&gt;, ParseQueryError&gt;) -&gt; Response {
+    match res {
+        Ok(Query(params)) =&gt; params.name.into_response(),
+        Err(err) =&gt; Response::builder().status(StatusCode::INTERNAL_SERVER_ERROR).body(err.to_string()),
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="custom-extractor"><a class="header" href="#custom-extractor">Custom extractor</a></h2>
+<p>You can also implement your own extractor.</p>
+<p>The following is an example of a custom token extractor, which extracts the
+token from the <code>MyToken</code> header.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::{
+    error::Error as StdError,
+    fmt::{self, Display, Formatter},
+};
+
+use poem::{handler, route, route::get, Endpoint, Error, FromRequest, Request, RequestBody};
+
+struct Token(String);
+
+// Error type for Token extractor
+#[derive(Debug)]
+struct MissingToken;
+
+impl Display for MissingToken {
+    fn fmt(&amp;self, f: &amp;mut Formatter&lt;'_&gt;) -&gt; fmt::Result {
+        write!(f, &quot;missing token&quot;)
+    }
+}
+
+impl StdError for MissingToken {}
+
+impl From&lt;MissingToken&gt; for Error {
+    fn from(err: MissingToken) -&gt; Self {
+        Error::bad_request(err)
+    }
+}
+
+// Implements a token extractor
+#[poem::async_trait]
+impl&lt;'a&gt; FromRequest&lt;'a&gt; for Token {
+    type Error = MissingToken;
+
+    async fn from_request(
+        req: &amp;'a Request,
+        body: &amp;mut RequestBody,
+    ) -&gt; Result&lt;Self, Self::Error&gt; {
+        let token = req
+            .headers()
+            .get(&quot;MyToken&quot;)
+            .and_then(|value| value.to_str().ok())
+            .ok_or(MissingToken)?;
+        Ok(Token(token.to_string()))
+    }
+}
+
+#[handler]
+async fn index(token: Token) {
+    assert_eq!(token.0, &quot;token123&quot;);
+}
+<span class="boring">}
+</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="responses"><a class="header" href="#responses">Responses</a></h1>
+<p>All types that can be converted to HTTP response <code>Response</code> should implement <code>IntoResponse</code>, and they can be used as the 
+return value of the handler function.</p>
+<p>In the following example, the <code>string_response</code> and <code>status_response</code> functions return the <code>String</code> and <code>StatusCode</code> 
+types, because <code>Poem</code> has implemented the <code>IntoResponse</code> feature for them.</p>
+<p>The <code>no_response</code> function does not return a value. We can also think that its return type is <code>()</code>, and <code>Poem</code> also 
+implements <code>IntoResponse</code> for <code>()</code>, which is always converted to <code>200 OK</code>.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use poem::handler;
+use poem::http::StatusCode;
+
+#[handler]
+fn string_response() -&gt; String {
+    &quot;hello&quot;.to_string()
+}
+
+#[handler]
+fn status_response() -&gt; StatusCode {}
+
+#[handler]
+fn no_response() {}
+
+<span class="boring">}
+</span></code></pre></pre>
+<h1 id="built-in-responses"><a class="header" href="#built-in-responses">Built-in responses</a></h1>
+<ul>
+<li>
+<p><strong>()</strong></p>
+<p>Sets the status to <code>OK</code> with an empty body.</p>
+</li>
+<li>
+<p><strong>&amp;'static str</strong></p>
+<p>Sets the status to <code>OK</code> and the <code>Content-Type</code> to <code>text/plain</code>. The
+string is used as the body of the response.</p>
+</li>
+<li>
+<p><strong>String</strong></p>
+<p>Sets the status to <code>OK</code> and the <code>Content-Type</code> to <code>text/plain</code>. The
+string is used as the body of the response.</p>
+</li>
+<li>
+<p><strong>&amp;'static [u8]</strong></p>
+<p>Sets the status to <code>OK</code> and the <code>Content-Type</code> to
+<code>application/octet-stream</code>. The slice is used as the body of the response.</p>
+</li>
+<li>
+<p><strong>Html&lt;T&gt;</strong></p>
+<p>Sets the status to <code>OK</code> and the <code>Content-Type</code> to <code>text/html</code>. <code>T</code> is
+used as the body of the response.</p>
+</li>
+<li>
+<p><strong>Json&lt;T&gt;</strong></p>
+<p>Sets the status to <code>OK</code> and the <code>Content-Type</code> to <code>application/json</code>. Use
+<a href="https://crates.io/crates/serde_json"><code>serde_json</code></a> to serialize <code>T</code> into a json string.</p>
+</li>
+<li>
+<p><strong>Bytes</strong></p>
+<p>Sets the status to <code>OK</code> and the <code>Content-Type</code> to
+<code>application/octet-stream</code>. The bytes is used as the body of the response.</p>
+</li>
+<li>
+<p><strong>Vec&lt;u8&gt;</strong></p>
+<p>Sets the status to <code>OK</code> and the <code>Content-Type</code> to
+<code>application/octet-stream</code>. The vector’s data is used as the body of the
+response.</p>
+</li>
+<li>
+<p><strong>StatusCode</strong></p>
+<p>Sets the status to the specified status code <code>StatusCode</code> with an empty
+body.</p>
+</li>
+<li>
+<p><strong>(StatusCode, T)</strong></p>
+<p>Convert <code>T</code> to response and set the specified status code <code>StatusCode</code>.</p>
+</li>
+<li>
+<p><strong>(StatusCode, HeaderMap, T)</strong></p>
+<p>Convert <code>T</code> to response and set the specified status code <code>StatusCode</code>,
+and then merge the specified <code>HeaderMap</code>.</p>
+</li>
+<li>
+<p><strong>Response</strong></p>
+<p>The implementation for <code>Response</code> always returns itself.</p>
+</li>
+<li>
+<p><strong>Compress&lt;T&gt;</strong></p>
+<p>Call <code>T::into_response</code> to get the response, then compress the response
+body with the specified algorithm, and set the correct <code>Content-Encoding</code>
+header.</p>
+</li>
+<li>
+<p><strong>SSE</strong></p>
+<p>Sets the status to <code>OK</code> and the <code>Content-Type</code> to <code>text/event-stream</code>
+with an event stream body. Use the <code>SSE::new</code> function to
+create it.</p>
+</li>
+</ul>
+<h2 id="custom-response"><a class="header" href="#custom-response">Custom response</a></h2>
+<p>In the following example, we wrap a response called <code>PDF</code>, which adds a <code>Content-Type: applicationn/json</code> header to the response.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use poem::{IntoResponse, Response};
+
+struct PDF(Vec&lt;u8&gt;);
+
+impl IntoResponse for PDF {
+    fn into_response(self) -&gt; Response { 
+        Response::builder()
+            .header(&quot;Content-Type&quot;, &quot;application/pdf&quot;)
+            .body(self.0)
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="handling-errors"><a class="header" href="#handling-errors">Handling errors</a></h1>
+<p>In <code>Poem</code>, we handle errors based on the response status code. When the status code is in <code>400-599</code>, we can think that 
+an error occurred while processing this request.</p>
+<p>We can use <code>EndpointExt::after</code> to create a new endpoint type to customize the error response.</p>
+<p>In the following example, the <code>after</code> function is used to convert the output of <code>index</code>, and a custom response is output
+if there is an error.</p>
+<p><strong>Note that the endpoint type generated by a <code>handler</code> macro is always <code>Endpoint&lt;Output=Response&gt;</code>, even if it returns 
+a <code>Result&lt;T&gt;</code>.</strong></p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use poem::{handler, Result, Error};
+use poem::http::StatusCode;
+
+#[handler]
+async fn index() -&gt; Result&lt;()&gt; {
+    Err(Error::new(StatusCode::BAD_REQUEST))
+}
+
+let ep = index.after(|resp| {
+    if resp.status().is_server_error() {
+        Response::builder()
+            .status(resp.status())
+            .body(&quot;custom error&quot;)
+    } else {
+        resp
+    }
+});
+<span class="boring">}
+</span></code></pre></pre>
+<p>The <code>EndpointExt::map_to_result</code> function can help us convert any type of endpoint to <code>Endpoint&lt;Output = Response&gt;</code>, so 
+that we only need to check the status code to know whether an error has occurred.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use poem::endpoint::make;
+use poem::{Error, EndpointExt};
+use poem::http::StatusCode;
+
+let ep = make(|_| Ok::&lt;(), Error&gt;(Error::new(StatusCode::new(Status::BAD_REQUEST))))
+    .map_to_response();
+    
+let ep = ep.after(|resp| {
+    if resp.status().is_server_error() {
+        Response::builder()
+            .status(resp.status())
+            .body(&quot;custom error&quot;)
+    } else {
+        resp
+    }
+});
+<span class="boring">}
+</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="middleware"><a class="header" href="#middleware">Middleware</a></h1>
+<p>The middleware can do something before or after the request is processed.</p>
+<p><code>Poem</code> provides some commonly used middleware implementations.</p>
+<ul>
+<li>
+<p><code>AddData</code></p>
+<p>Used to attach a status to the request, such as a token for authentication.</p>
+</li>
+<li>
+<p><code>SetHeader</code></p>
+<p>Used to add some specific HTTP headers to the response.</p>
+</li>
+<li>
+<p><code>Cors</code></p>
+<p>Used for Cross-Origin Resource Sharing.</p>
+</li>
+<li>
+<p><code>Tracing</code></p>
+<p>Use <a href="https://crates.io/crates/tracing"><code>tracing</code></a> to record all requests and responses.</p>
+</li>
+</ul>
+<h2 id="custom-middleware"><a class="header" href="#custom-middleware">Custom middleware</a></h2>
+<p>It is easy to implement your own middleware, you only need to implement the <code>Middleware</code> trait, which is a converter to 
+convert an input endpoint to another endpoint.</p>
+<p>The following example creates a custom middleware that reads the value of the HTTP request header named <code>X-Token</code> and 
+adds it as the status of the request.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use poem::{handler, web::Data, Endpoint, EndpointExt, Middleware, Request};
+
+/// A middleware that extract token from HTTP headers.
+struct TokenMiddleware;
+
+impl&lt;E: Endpoint&gt; Middleware&lt;E&gt; for TokenMiddleware {
+    type Output = TokenMiddlewareImpl&lt;E&gt;;
+  
+    fn transform(self, ep: E) -&gt; Self::Output {
+        TokenMiddlewareImpl { ep }
+    }
+}
+
+/// The new endpoint type generated by the TokenMiddleware.
+struct TokenMiddlewareImpl&lt;E&gt; {
+    ep: E,
+}
+
+const TOKEN_HEADER: &amp;str = &quot;X-Token&quot;;
+
+/// Token data
+struct Token(String);
+
+#[poem::async_trait]
+impl&lt;E: Endpoint&gt; Endpoint for TokenMiddlewareImpl&lt;E&gt; {
+    type Output = E::Output;
+  
+    async fn call(&amp;self, mut req: Request) -&gt; Self::Output {
+        if let Some(value) = req
+            .headers()
+            .get(TOKEN_HEADER)
+            .and_then(|value| value.to_str().ok())
+        {
+            // Insert token data to extensions of request.
+            let token = value.to_string();
+            req.extensions_mut().insert(Token(token));
+        }
+      
+        // call the inner endpoint.
+        self.ep.call(req).await
+    }
+}
+
+#[handler]
+async fn index(Data(token): Data&lt;&amp;Token&gt;) -&gt; String {
+    token.0.clone()
+}
+
+// Use the `TokenMiddleware` middleware to convert the `index` endpoint.
+let ep = index.with(TokenMiddleware);
+<span class="boring">}
+</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="protocols"><a class="header" href="#protocols">Protocols</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="websocket"><a class="header" href="#websocket">Websocket</a></h1>
+<p>Websocket allows a long connection for two-way communication between the client and the server.</p>
+<p><code>Poem</code> provides a <code>WebSocket</code> extractor to create this connection.</p>
+<p>When the connection is successfully upgraded, a specified closure is called to send and receive data.</p>
+<p>The following example is an echo service, which always sends out the received data.</p>
+<p><strong>Note that the output of this endpoint must be the return value of the <code>WebSocket::on_upgrade</code> function, otherwise the 
+connection cannot be created correctly.</strong></p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use futures_util::{SinkExt, StreamExt};
+use poem::{
+    handler, route,
+    route::get,
+    web::websocket::{Message, WebSocket},
+    IntoResponse,
+};
+
+#[handler]
+async fn index(ws: WebSocket) -&gt; impl IntoResponse {
+    ws.on_upgrade(|mut socket| async move {
+        if let Some(Ok(Message::Text(text))) = socket.next().await {
+            let _ = socket.send(Message::Text(text)).await;
+        }
+    })
+}
+<span class="boring">}
+</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="server-sent-events-sse"><a class="header" href="#server-sent-events-sse">Server-Sent Events (SSE)</a></h1>
+<p>SSE allows the server to continuously push data to the client.</p>
+<p>You need to create a <code>SSE</code> response with a type that implements <code>Stream&lt;Item=Event&gt;</code>.</p>
+<p>The endpoint in the example below will send three events.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use futures_util::stream;
+use poem::{
+    handler,
+    http::StatusCode,
+    web::sse::{Event, SSE},
+    Endpoint, Request,
+};
+
+#[handler]
+fn index() -&gt; SSE {
+    SSE::new(stream::iter(vec![
+        Event::message(&quot;a&quot;),
+        Event::message(&quot;b&quot;),
+        Event::message(&quot;c&quot;),
+    ]))
+}
+<span class="boring">}
+</span></code></pre></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="openapi"><a class="header" href="#openapi">OpenAPI</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="quickstart-1"><a class="header" href="#quickstart-1">Quickstart</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="type-system"><a class="header" href="#type-system">Type System</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="basic-types"><a class="header" href="#basic-types">Basic types</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="enum"><a class="header" href="#enum">Enum</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="object"><a class="header" href="#object">Object</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="request-parameters"><a class="header" href="#request-parameters">Request parameters</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="payload"><a class="header" href="#payload">Payload</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="request-bodies"><a class="header" href="#request-bodies">Request bodies</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="request-responses"><a class="header" href="#request-responses">Request responses</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="validators"><a class="header" href="#validators">Validators</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="advanced"><a class="header" href="#advanced">Advanced</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="custom-type"><a class="header" href="#custom-type">Custom Type</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="separated-apis"><a class="header" href="#separated-apis">Separated APIs</a></h1>
 
                     </main>
 
