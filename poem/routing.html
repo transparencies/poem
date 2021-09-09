@@ -159,8 +159,6 @@ async fn b() -&gt; &amp;'static str { &quot;b&quot; }
 let ep = poem::route()
     .at(&quot;/a&quot;, a)
     .at(&quot;/b&quot;, b);
-
-Server::bind(&quot;127.0.0.1:3000&quot;).await?.run(ep).await
 <span class="boring">}
 </span></code></pre></pre>
 <h2 id="capture-the-variables"><a class="header" href="#capture-the-variables">Capture the variables</a></h2>

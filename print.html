@@ -164,7 +164,7 @@ request uri. And return a <code>String</code>, the string will be converted into
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use serde::Deserialize;
-use poem::{handler, web::Query};
+use poem::{handler, listener::TcpListener, route, web::Query, Server};
 
 #[derive(Deserialize)]
 struct Params {
@@ -182,12 +182,13 @@ async fn index(Query(params): Query&lt;Params&gt;) -&gt; String {
 <p>Let's start a server, it listens to <code>127.0.0.1:3000</code>, please ignore these <code>unwrap</code> calls, this is just an example.</p>
 <p>The <code>Server::run</code> function accepts any type that implements the <code>Endpoint</code> feature. In this example we don't have a 
 routing object, so any request path will be handled by the <code>index</code> function.</p>
-<pre><pre class="playground"><code class="language-rust">use poem::Server;
-
-#[tokio::main]
+<pre><pre class="playground"><code class="language-rust">#[tokio::main]
 async fn main() {
-    let server = Server::bind(&quot;127.0.0.1:3000&quot;).await.unwrap();
-    server.run(index).await.unwrap();
+    use poem::route::get;
+    let app = route().at(&quot;/&quot;, get(index));
+    let listener = TcpListener::bind(&quot;127.0.0.1:3000&quot;);
+    let server = Server::new(listener).await.unwrap();
+    server.run(app).await.unwrap();
 }
 </code></pre></pre>
 <p>In this way, a simple example is implemented, we can run it and then use <code>curl</code> to do some tests.</p>
@@ -294,8 +295,6 @@ async fn b() -&gt; &amp;'static str { &quot;b&quot; }
 let ep = poem::route()
     .at(&quot;/a&quot;, a)
     .at(&quot;/b&quot;, b);
-
-Server::bind(&quot;127.0.0.1:3000&quot;).await?.run(ep).await
 <span class="boring">}
 </span></code></pre></pre>
 <h2 id="capture-the-variables"><a class="header" href="#capture-the-variables">Capture the variables</a></h2>
@@ -368,12 +367,8 @@ fails.</p>
 <p>Extracts the <code>Request</code> from the incoming request.</p>
 </li>
 <li>
-<p><strong>SocketAddr</strong></p>
-<p>Extracts the remote address <code>SocketAddr</code> from request.</p>
-</li>
-<li>
-<p><strong>IpAddr</strong></p>
-<p>Extracts the remote ip address <code>SocketAddr</code> from request.</p>
+<p><strong>RemoteAddr</strong></p>
+<p>Extracts the remote peer's address [<code>RemoteAddr</code>] from request.</p>
 </li>
 <li>
 <p><strong>Method</strong></p>
