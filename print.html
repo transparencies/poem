@@ -148,7 +148,7 @@
 <div style="break-before: page; page-break-before: always;"></div><h1 id="quickstart"><a class="header" href="#quickstart">Quickstart</a></h1>
 <h2 id="add-dependency-libraries"><a class="header" href="#add-dependency-libraries">Add dependency libraries</a></h2>
 <pre><code class="language-toml">[dependencies]
-poem = &quot;0.4&quot;
+poem = &quot;0.6&quot;
 </code></pre>
 <h2 id="write-a-endpoint"><a class="header" href="#write-a-endpoint">Write a endpoint</a></h2>
 <p>The <code>handler</code> macro converts a function into a type that implements <code>Endpoint</code>, and the <code>Endpoint</code> trait represents
@@ -196,7 +196,7 @@ async fn main() {
 name=10
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="endpoint"><a class="header" href="#endpoint">Endpoint</a></h1>
-<p>An endpoint is a type that can handle HTTP requests. You can implement the <code>Endpoint</code> trait to create your own endpoint.
+<p>The endpoint can handle HTTP requests. You can implement the <code>Endpoint</code> trait to create your own endpoint.
 <code>Poem</code> also provides some convenient functions to easily create a custom endpoint type.</p>
 <p>In the previous chapter, we learned how to use the <code>handler</code> macro to convert a function to an endpoint.</p>
 <p>Now let's see how to create your own endpoint by implementing the <code>Endpoint</code> trait.</p>
@@ -345,6 +345,7 @@ let ep = poem::route()
 <span class="boring">}
 </span></code></pre></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="extractors"><a class="header" href="#extractors">Extractors</a></h1>
+<p>The extractor is used to extract something from the HTTP request.</p>
 <p><code>Poem</code> provides some commonly used extractors for extracting something from HTTP requests.</p>
 <p>You can use one or more extractors as the parameters of the function, up to 16.</p>
 <p>In the following example, the <code>index</code> function uses 3 extractors to extract the remote address, HTTP method and URI.</p>
