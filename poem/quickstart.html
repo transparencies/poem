@@ -157,7 +157,7 @@ the HTTP request.</p>
 <p>The return value of the function must be a type that implements the <code>IntoResponse</code> trait. It can convert itself into an
 HTTP response through the <code>IntoResponse::into_response</code> method.</p>
 <p>The following function has an extractor, which extracts the <code>name</code> and <code>value</code> parameters from the query string of the 
-request uri. And return a <code>String</code>, the string will be converted into an HTTP response.</p>
+request uri and return a <code>String</code>, the string will be converted into an HTTP response.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -171,22 +171,25 @@ struct Params {
 }
 
 #[handler]
-async fn index(Query(params): Query&lt;Params&gt;) -&gt; String {
+async fn index(Query(Params { name, value }): Query&lt;Params&gt;) -&gt; String {
     format!(&quot;{}={}&quot;, name, value)
 }
 <span class="boring">}
 </span></code></pre></pre>
 <h2 id="server-http-server"><a class="header" href="#server-http-server">Server HTTP server</a></h2>
 <p>Let's start a server, it listens to <code>127.0.0.1:3000</code>, please ignore these <code>unwrap</code> calls, this is just an example.</p>
-<p>The <code>Server::run</code> function accepts any type that implements the <code>Endpoint</code> feature. In this example we don't have a 
+<p>The <code>Server::run</code> function accepts any type that implements the <code>Endpoint</code> trait. In this example we don't have a 
 routing object, so any request path will be handled by the <code>index</code> function.</p>
-<pre><pre class="playground"><code class="language-rust">#[tokio::main]
+<pre><pre class="playground"><code class="language-rust">#[handler]
+async fn index() -&gt; &amp;'static str {
+    &quot;hello&quot;
+}
+
+#[tokio::main]
 async fn main() {
-    use poem::route::get;
-    let app = route().at(&quot;/&quot;, get(index));
     let listener = TcpListener::bind(&quot;127.0.0.1:3000&quot;);
     let server = Server::new(listener).await.unwrap();
-    server.run(app).await.unwrap();
+    server.run(index).await.unwrap();
 }
 </code></pre></pre>
 <p>In this way, a simple example is implemented, we can run it and then use <code>curl</code> to do some tests.</p>
