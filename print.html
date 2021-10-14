@@ -140,7 +140,7 @@
 <div style="break-before: page; page-break-before: always;"></div><h1 id="quickstart"><a class="header" href="#quickstart">Quickstart</a></h1>
 <h2 id="add-dependency-libraries"><a class="header" href="#add-dependency-libraries">Add dependency libraries</a></h2>
 <pre><code class="language-toml">[dependencies]
-poem = &quot;0.8&quot;
+poem = &quot;1.0&quot;
 </code></pre>
 <h2 id="write-a-endpoint"><a class="header" href="#write-a-endpoint">Write a endpoint</a></h2>
 <p>The <code>handler</code> macro converts a function into a type that implements <code>Endpoint</code>, and the <code>Endpoint</code> trait represents
@@ -493,15 +493,10 @@ fn index(res: Result&lt;Query&lt;Params&gt;, ParseQueryError&gt;) -&gt; Response
 <p>You can also implement your own extractor.</p>
 <p>The following is an example of a custom token extractor, which extracts the
 token from the <code>MyToken</code> header.</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use std::{
-    error::Error as StdError,
-    fmt::{self, Display, Formatter},
+<pre><pre class="playground"><code class="language-rust">use poem::{
+    get, handler, http::StatusCode, listener::TcpListener, FromRequest, Request,
+    RequestBody, Response, Route, Server,
 };
-
-use poem::{handler, Endpoint, Error, FromRequest, Request, RequestBody};
 
 struct Token(String);
 
@@ -509,17 +504,12 @@ struct Token(String);
 #[derive(Debug)]
 struct MissingToken;
 
-impl Display for MissingToken {
-    fn fmt(&amp;self, f: &amp;mut Formatter&lt;'_&gt;) -&gt; fmt::Result {
-        write!(f, &quot;missing token&quot;)
-    }
-}
-
-impl StdError for MissingToken {}
-
-impl From&lt;MissingToken&gt; for Error {
-    fn from(err: MissingToken) -&gt; Self {
-        Error::bad_request(err)
+/// custom-error can also be reused
+impl IntoResponse for MissingToken {
+    fn into_response(self) -&gt; Response {
+        Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(&quot;missing token&quot;)
     }
 }
 
@@ -528,10 +518,7 @@ impl From&lt;MissingToken&gt; for Error {
 impl&lt;'a&gt; FromRequest&lt;'a&gt; for Token {
     type Error = MissingToken;
 
-    async fn from_request(
-        req: &amp;'a Request,
-        body: &amp;mut RequestBody,
-    ) -&gt; Result&lt;Self, Self::Error&gt; {
+    async fn from_request(req: &amp;'a Request, _body: &amp;mut RequestBody) -&gt; Result&lt;Self, Self::Error&gt; {
         let token = req
             .headers()
             .get(&quot;MyToken&quot;)
@@ -545,8 +532,20 @@ impl&lt;'a&gt; FromRequest&lt;'a&gt; for Token {
 async fn index(token: Token) {
     assert_eq!(token.0, &quot;token123&quot;);
 }
-<span class="boring">}
-</span></code></pre></pre>
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;(), std::io::Error&gt; {
+    if std::env::var_os(&quot;RUST_LOG&quot;).is_none() {
+        std::env::set_var(&quot;RUST_LOG&quot;, &quot;poem=debug&quot;);
+    }
+    tracing_subscriber::fmt::init();
+
+    let app = Route::new().at(&quot;/&quot;, get(index));
+    let listener = TcpListener::bind(&quot;127.0.0.1:3000&quot;);
+    let server = Server::new(listener).await?;
+    server.run(app).await
+}
+</code></pre></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="responses"><a class="header" href="#responses">Responses</a></h1>
 <p>All types that can be converted to HTTP response <code>Response</code> should implement <code>IntoResponse</code>, and they can be used as the 
 return value of the handler function.</p>
@@ -614,6 +613,10 @@ used as the body of the response.</p>
 <p>Sets the status to <code>OK</code> and the <code>Content-Type</code> to
 <code>application/octet-stream</code>. The vector’s data is used as the body of the
 response.</p>
+</li>
+<li>
+<p><strong>Body</strong></p>
+<p>Sets the status to <code>OK</code> and use the specified body.</p>
 </li>
 <li>
 <p><strong>StatusCode</strong></p>
