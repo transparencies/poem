@@ -938,7 +938,7 @@ async fn main() -&gt; Result&lt;(), std::io::Error&gt; {
         .server(&quot;http://localhost:3000/api&quot;);
   
     // Enable the Swagger UI
-    let ui = api_service.swagger_ui(&quot;http://localhost:3000&quot;);
+    let ui = api_service.swagger_ui();
 
     // Start the server and specify that the root path of the API is /api, and the path of Swagger UI is /
     poem::Server::new(listener)
