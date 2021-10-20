@@ -433,6 +433,16 @@ using multiple extractors of this type in one handler.</em></p>
 using multiple extractors of this type in one handler.</em></p>
 </li>
 <li>
+<p><strong>&amp;CookieJar</strong></p>
+<p>Extracts the <code>CookieJar</code>](cookie::CookieJar) from the incoming request.</p>
+<p><em>Requires <code>CookieJarManager</code> middleware.</em></p>
+</li>
+<li>
+<p><strong>&amp;Session</strong></p>
+<p>Extracts the <a href="crate::session::Session"><code>Session</code></a> from the incoming request.</p>
+<p><em>Requires <code>CookieSession</code> or <code>RedisSession</code> middleware.</em></p>
+</li>
+<li>
 <p><strong>Body</strong></p>
 <p>Extracts the <code>Body</code> from the incoming request.</p>
 <p><em>This extractor will take over the requested body, so you should avoid
