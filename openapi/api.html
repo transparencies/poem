@@ -181,7 +181,7 @@ impl Api {
     }
   
     /// Query pet by id
-    #[oai(path = &quot;/pet/:pet_id&quot;, method = &quot;delete&quot;)]
+    #[oai(path = &quot;/pet&quot;, method = &quot;delete&quot;)]
     async fn find_pet_by_id(&amp;self, #[oai(name = &quot;status&quot;, in = &quot;query&quot;)] id: u64) -&gt; Result&lt;Json&lt;Pet&gt;&gt; {
         todo!()
     } 
