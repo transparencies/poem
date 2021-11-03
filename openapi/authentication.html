@@ -137,8 +137,6 @@
                         <h1 id="authentication"><a class="header" href="#authentication">Authentication</a></h1>
 <p>The OpenApi specification defines <code>apikey</code>, <code>basic</code>, <code>bearer</code>, <code>oauth2</code> and <code>openIdConnect</code> authentication modes, which
 describe the authentication parameters required for the specified operation.</p>
-<p><strong>Note: The main purpose of authentication information is to allow <code>Swagger UI</code> to correctly execute the authentication 
-process when testing the API.</strong></p>
 <p>The following example is to log in with <code>Github</code> and provide an operation to get all public repositories.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -186,7 +184,36 @@ impl Api {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<p>For the complete example, please refer to <a href="https://github.com/poem-web/poem/tree/master/examples/openapi/auth%60">Auth Example</a>.</p>
+<p>For the complete example, please refer to <a href="https://github.com/poem-web/poem/tree/master/examples/openapi/auth-github%60">Example</a>.</p>
+<h2 id="check-authentication-information"><a class="header" href="#check-authentication-information">Check authentication information</a></h2>
+<p>You can use the <code>checker</code> attribute to specify a checker function to check the original authentication information and 
+convert it to the return type of this function. This function must return <code>Option&lt;T&gt;</code>, and return <code>None</code> if check fails.</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>struct User {
+    username: String,
+}
+
+/// ApiKey authorization
+#[derive(SecurityScheme)]
+#[oai(
+    type = &quot;api_key&quot;,
+    key_name = &quot;X-API-Key&quot;,
+    in = &quot;header&quot;,
+    checker = &quot;api_checker&quot;
+)]
+struct MyApiKeyAuthorization(User);
+
+async fn api_checker(req: &amp;Request, api_key: ApiKey) -&gt; Option&lt;User&gt; {
+    let connection = req.data::&lt;DbConnection&gt;().unwrap();
+    
+    // check in database
+    todo!()
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>For the complete example, please refer to <a href="https://github.com/poem-web/poem/tree/master/examples/openapi/auth-apikey%60">Example</a>.</p>
 
                     </main>
 
