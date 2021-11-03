@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use darling::{
     ast::{Data, Style},
     util::{Ignored, SpannedValue},
@@ -211,6 +209,8 @@ struct SecuritySchemeArgs {
     flows: Option<SpannedValue<OAuthFlows>>,
     #[darling(default)]
     openid_connect_url: Option<String>,
+    #[darling(default)]
+    checker: Option<SpannedValue<String>>,
 }
 
 impl SecuritySchemeArgs {
@@ -394,13 +394,19 @@ impl SecuritySchemeArgs {
                     ApiKeyInType::Header => quote!(#crate_name::registry::MetaParamIn::Header),
                     ApiKeyInType::Cookie => quote!(#crate_name::registry::MetaParamIn::Cookie),
                 };
-                quote!(#crate_name::auth::ApiKeyAuthorization::from_request(req, query, #key_name, #param_in))
+                quote!(<#crate_name::auth::ApiKey as #crate_name::auth::ApiKeyAuthorization>::from_request(req, query, #key_name, #param_in))
             }
-            AuthType::Basic => quote!(#crate_name::auth::BasicAuthorization::from_request(req)),
-            AuthType::Bearer => quote!(#crate_name::auth::BearerAuthorization::from_request(req)),
-            AuthType::OAuth2 => quote!(#crate_name::auth::BearerAuthorization::from_request(req)),
+            AuthType::Basic => {
+                quote!(<#crate_name::auth::Basic as #crate_name::auth::BasicAuthorization>::from_request(req))
+            }
+            AuthType::Bearer => {
+                quote!(<#crate_name::auth::Bearer as #crate_name::auth::BearerAuthorization>::from_request(req))
+            }
+            AuthType::OAuth2 => {
+                quote!(<#crate_name::auth::Bearer as #crate_name::auth::BearerAuthorization>::from_request(req))
+            }
             AuthType::OpenIdConnect => {
-                quote!(#crate_name::auth::BearerAuthorization::from_request(req))
+                quote!(<#crate_name::auth::Bearer as #crate_name::auth::BearerAuthorization>::from_request(req))
             }
         }
     }
@@ -437,8 +443,20 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
 
     let register_security_scheme = args.generate_register_security_scheme(&crate_name)?;
     let from_request = args.generate_from_request(&crate_name);
+    let checker = match &args.checker {
+        Some(name) => match syn::parse_str::<Path>(name) {
+            Ok(path) => quote! {
+                let output = ::std::option::Option::ok_or(#path(&req, output).await, #crate_name::ParseRequestError::Authorization)?;
+            },
+            Err(err) => {
+                return Err(Error::new(name.span(), err.to_string()).into());
+            }
+        },
+        None => quote! {},
+    };
 
     let expanded = quote! {
+        #[#crate_name::poem::async_trait]
         impl #crate_name::SecurityScheme for #ident {
             const NAME: &'static str = #oai_typename;
 
@@ -446,8 +464,10 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
                 #register_security_scheme
             }
 
-            fn from_request(req: &#crate_name::poem::Request, query: &::std::collections::HashMap<::std::string::String, ::std::string::String>) -> ::std::result::Result<Self, #crate_name::ParseRequestError> {
-                #from_request.map(Self)
+            async fn from_request(req: &#crate_name::poem::Request, query: &::std::collections::HashMap<::std::string::String, ::std::string::String>) -> ::std::result::Result<Self, #crate_name::ParseRequestError> {
+                let output = #from_request?;
+                #checker
+                ::std::result::Result::Ok(Self(output))
             }
         }
     };
