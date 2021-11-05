@@ -19,6 +19,7 @@ mod redirect;
 pub mod sse;
 #[cfg(feature = "tempfile")]
 mod tempfile;
+#[cfg(feature = "template")]
 mod template;
 #[doc(inline)]
 pub use headers;
@@ -41,6 +42,7 @@ pub use multipart::{Field, Multipart};
 pub use path::Path;
 pub use query::Query;
 pub use redirect::Redirect;
+#[cfg(feature = "template")]
 pub use template::{HtmlTemplate, Template};
 pub use typed_header::TypedHeader;
 
