@@ -155,6 +155,31 @@
     .tls(TlsConfig::new().key(KEY).cert(CERT));
 <span class="boring">}
 </span></code></pre></pre>
+<h2 id="tls-reload"><a class="header" href="#tls-reload">TLS reload</a></h2>
+<p>You can use a stream to pass the latest Tls config to <code>Poem</code>.</p>
+<p>The following example loads the latest TLS config from file every 1 minute:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use async_trait::async_trait;
+
+fn load_tls_config() -&gt; Result&lt;TlsConfig, std::io::Error&gt; {
+  Ok(TlsConfig::new()
+          .cert(std::fs::read(&quot;cert.pem&quot;)?)
+          .key(std::fs::read(&quot;key.pem&quot;)?))
+}
+
+let listener = TcpListener::bind(&quot;127.0.0.1:3000&quot;)
+    .tls(async_stream::stream! {
+        loop {
+            if let Ok(tls_config) = load_tls_config() {
+                yield tls_config;
+            }
+            tokio::time::sleep(Duration::from_secs(60)).await;
+        }
+    });
+<span class="boring">}
+</span></code></pre></pre>
 <h2 id="combine-multiple-listeners"><a class="header" href="#combine-multiple-listeners">Combine multiple listeners.</a></h2>
 <p>Call <code>Listener::combine</code> to combine two listeners into one, or you can call this function multiple times to combine more listeners.</p>
 <pre><pre class="playground"><code class="language-rust">
