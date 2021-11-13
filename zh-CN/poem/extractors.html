@@ -1,0 +1,373 @@
+<!DOCTYPE HTML>
+<html lang="zh-CN" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>提取器 - Poem 使用手册</title>
+        <!-- Custom HTML head -->
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="Poem 使用手册">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../poem.html"><strong aria-hidden="true">1.</strong> Poem</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../poem/quickstart.html"><strong aria-hidden="true">1.1.</strong> 快速开始</a></li><li class="chapter-item expanded "><a href="../poem/endpoint.html"><strong aria-hidden="true">1.2.</strong> Endpoint</a></li><li class="chapter-item expanded "><a href="../poem/routing.html"><strong aria-hidden="true">1.3.</strong> 路由</a></li><li class="chapter-item expanded "><a href="../poem/extractors.html" class="active"><strong aria-hidden="true">1.4.</strong> 提取器</a></li><li class="chapter-item expanded "><a href="../poem/responses.html"><strong aria-hidden="true">1.5.</strong> 响应</a></li><li class="chapter-item expanded "><a href="../poem/handling_errors.html"><strong aria-hidden="true">1.6.</strong> 处理错误</a></li><li class="chapter-item expanded "><a href="../poem/middleware.html"><strong aria-hidden="true">1.7.</strong> 中间件</a></li><li class="chapter-item expanded "><a href="../poem/protocols.html"><strong aria-hidden="true">1.8.</strong> 协议</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../poem/protocols/websocket.html"><strong aria-hidden="true">1.8.1.</strong> Websocket</a></li><li class="chapter-item expanded "><a href="../poem/protocols/sse.html"><strong aria-hidden="true">1.8.2.</strong> 服务端事件 (SSE)</a></li></ol></li><li class="chapter-item expanded "><a href="../poem/listeners.html"><strong aria-hidden="true">1.9.</strong> 监听器</a></li></ol></li><li class="chapter-item expanded "><a href="../openapi.html"><strong aria-hidden="true">2.</strong> OpenAPI</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../openapi/quickstart.html"><strong aria-hidden="true">2.1.</strong> 快速开始</a></li><li class="chapter-item expanded "><a href="../openapi/type_system.html"><strong aria-hidden="true">2.2.</strong> 类型系统</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../openapi/type_system/basic_types.html"><strong aria-hidden="true">2.2.1.</strong> 基础类型</a></li><li class="chapter-item expanded "><a href="../openapi/type_system/enum.html"><strong aria-hidden="true">2.2.2.</strong> 枚举</a></li><li class="chapter-item expanded "><a href="../openapi/type_system/object.html"><strong aria-hidden="true">2.2.3.</strong> 对象</a></li></ol></li><li class="chapter-item expanded "><a href="../openapi/api.html"><strong aria-hidden="true">2.3.</strong> 定义API</a></li><li class="chapter-item expanded "><a href="../openapi/custom_request.html"><strong aria-hidden="true">2.4.</strong> 自定义请求</a></li><li class="chapter-item expanded "><a href="../openapi/custom_response.html"><strong aria-hidden="true">2.5.</strong> 自定义响应</a></li><li class="chapter-item expanded "><a href="../openapi/upload_files.html"><strong aria-hidden="true">2.6.</strong> 文件上传</a></li><li class="chapter-item expanded "><a href="../openapi/validators.html"><strong aria-hidden="true">2.7.</strong> 参数校验</a></li><li class="chapter-item expanded "><a href="../openapi/authentication.html"><strong aria-hidden="true">2.8.</strong> 认证</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Poem 使用手册</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="提取器"><a class="header" href="#提取器">提取器</a></h1>
+<p>提取器用于从 HTTP 请求中提取某些内容。</p>
+<p><code>Poem</code> 提供了一些常用的提取器来从 HTTP 请求中提取一些东西。</p>
+<p>你可以使用一个或多个提取器作为函数的参数，最多 16 个。</p>
+<p>在下面的例子中，<code>index</code> 函数使用 3 个提取器来提取远程地址、HTTP 方法和 URI。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[handler]
+fn index(remote_addr: SocketAddr, method: Method, uri: &amp;Uri) {}
+<span class="boring">}
+</span></code></pre></pre>
+<h1 id="内置提取器"><a class="header" href="#内置提取器">内置提取器</a></h1>
+<ul>
+<li>
+<p><strong>Option&lt;T&gt;</strong></p>
+<p>从传入的请求中提取 <code>T</code>，如果失败就返回 <code>None</code>。</p>
+</li>
+<li>
+<p><strong>&amp;Request</strong></p>
+<p>从传入的请求中提取 <code>Request</code>.</p>
+</li>
+<li>
+<p><strong>RemoteAddr</strong></p>
+<p>从请求中提取远端对等地址 [<code>RemoteAddr</code>]。</p>
+</li>
+<li>
+<p><strong>LocalAddr</strong></p>
+<p>从请求中提取本地服务器的地址 [<code>LocalAddr</code>]。</p>
+</li>
+<li>
+<p><strong>Method</strong></p>
+<p>从传入的请求中提取 <code>Method</code>。</p>
+</li>
+<li>
+<p><strong>Version</strong></p>
+<p>从传入的请求中提取 <code>Version</code>。</p>
+</li>
+<li>
+<p><strong>&amp;Uri</strong></p>
+<p>从传入的请求中提取 <code>Uri</code>。</p>
+</li>
+<li>
+<p><strong>&amp;HeaderMap</strong></p>
+<p>从传入的请求中提取 <code>HeaderMap</code>。</p>
+</li>
+<li>
+<p><strong>Data&lt;&amp;T&gt;</strong></p>
+<p>从传入的请求中提取 <code>Data</code> 。</p>
+</li>
+<li>
+<p><strong>TypedHeader&lt;T&gt;</strong></p>
+<p>从传入的请求中提取 <code>TypedHeader</code>。</p>
+</li>
+<li>
+<p><strong>Path&lt;T&gt;</strong></p>
+<p>从传入的请求中提取 <code>Path</code>。</p>
+</li>
+<li>
+<p><strong>Query&lt;T&gt;</strong></p>
+<p>从传入的请求中提取 <code>Query</code>。</p>
+</li>
+<li>
+<p><strong>Form&lt;T&gt;</strong></p>
+<p>从传入的请求中提取 <code>Form</code>。</p>
+</li>
+<li>
+<p><strong>Json&lt;T&gt;</strong></p>
+<p>从传入的请求中提取 <code>Json</code> 。</p>
+<p><em>这个提取器将接管请求的主体，所以你应该避免在一个处理程序中使用多个这种类型的提取器。</em></p>
+</li>
+<li>
+<p><strong>TempFile</strong></p>
+<p>从传入的请求中提取 <code>TempFile</code>。</p>
+<p><em>这个提取器将接管请求的主体，所以你应该避免在一个处理程序中使用多个这种类型的提取器。</em></p>
+</li>
+<li>
+<p><strong>Multipart</strong></p>
+<p>从传入的请求中提取 <code>Multipart</code>。</p>
+<p><em>这个提取器将接管请求的主体，所以你应该避免在一个处理程序中使用多个这种类型的提取器。</em></p>
+</li>
+<li>
+<p><strong>&amp;CookieJar</strong></p>
+<p>从传入的请求中提取 <code>CookieJar</code>](cookie::CookieJar)。</p>
+<p><em>需要 <code>CookieJarManager</code> 中间件。</em></p>
+</li>
+<li>
+<p><strong>&amp;Session</strong></p>
+<p>从传入的请求中提取 <a href="crate::session::Session"><code>Session</code></a>。</p>
+<p><em>需要 <code>CookieSession</code> 或 <code>RedisSession</code> 中间件。</em></p>
+</li>
+<li>
+<p><strong>Body</strong></p>
+<p>从传入的请求中提取 <code>Body</code>。</p>
+<p><em>这个提取器将接管请求的主体，所以你应该避免在一个处理程序中使用多个这种类型的提取器。</em></p>
+</li>
+<li>
+<p><strong>String</strong></p>
+<p>从传入的请求中提取 body 并将其解析为 utf8 字符串。</p>
+<p><em>这个提取器将接管请求的主体，所以你应该避免在一个处理程序中使用多个这种类型的提取器。</em></p>
+</li>
+<li>
+<p><strong>Vec&lt;u8&gt;</strong></p>
+<p>从传入的请求中提取 body 并将其收集到 <code>Vec&lt;u8&gt;</code>.</p>
+<p><em>这个提取器将接管请求的主体，所以你应该避免在一个处理程序中使用多个这种类型的提取器。</em></p>
+</li>
+<li>
+<p><strong>Bytes</strong></p>
+<p>从传入的请求中提取 body 并将其收集到 <code>Bytes</code>.</p>
+<p><em>这个提取器将接管请求的主体，所以你应该避免在一个处理程序中使用多个这种类型的提取器。</em></p>
+</li>
+<li>
+<p><strong>WebSocket</strong></p>
+<p>准备接受 websocket 连接。</p>
+</li>
+</ul>
+<h2 id="处理提取器错误"><a class="header" href="#处理提取器错误">处理提取器错误</a></h2>
+<p>默认情况下，当发生错误时，提取器会返回<code>400 Bad Request</code>，但有时您可能想要更改这种行为，因此您可以自己处理错误。</p>
+<p>在下面的例子中，当 <code>Query</code> 提取器失败时，它将返回一个 <code>500 Internal Server Error</code> 响应以及错误原因。</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use poem::web::Query;
+use poem::error::ParseQueryError;
+use poem::{IntoResponse, Response};
+use poem::http::StatusCode;
+
+#[derive(Debug, Deserialize)]
+struct Params {
+    name: String,
+}
+
+#[handler]
+fn index(res: Result&lt;Query&lt;Params&gt;, ParseQueryError&gt;) -&gt; Response {
+    match res {
+        Ok(Query(params)) =&gt; params.name.into_response(),
+        Err(err) =&gt; Response::builder().status(StatusCode::INTERNAL_SERVER_ERROR).body(err.to_string()),
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<h2 id="自定义提取器"><a class="header" href="#自定义提取器">自定义提取器</a></h2>
+<p>您还可以实现自己的提取器。</p>
+<p>以下是自定义 token 提取器的示例，它提取来自 <code>MyToken</code> 标头的 token。</p>
+<pre><pre class="playground"><code class="language-rust">use poem::{
+    get, handler, http::StatusCode, listener::TcpListener, FromRequest, Request,
+    RequestBody, Response, Route, Server,
+};
+
+struct Token(String);
+
+// Token 提取器的错误类型
+#[derive(Debug)]
+struct MissingToken;
+
+/// 自定义错误也可以重用
+impl IntoResponse for MissingToken {
+    fn into_response(self) -&gt; Response {
+        Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(&quot;missing token&quot;)
+    }
+}
+
+// 实现一个 token 提取器
+#[poem::async_trait]
+impl&lt;'a&gt; FromRequest&lt;'a&gt; for Token {
+    type Error = MissingToken;
+
+    async fn from_request(req: &amp;'a Request, _body: &amp;mut RequestBody) -&gt; Result&lt;Self, Self::Error&gt; {
+        let token = req
+            .headers()
+            .get(&quot;MyToken&quot;)
+            .and_then(|value| value.to_str().ok())
+            .ok_or(MissingToken)?;
+        Ok(Token(token.to_string()))
+    }
+}
+
+#[handler]
+async fn index(token: Token) {
+    assert_eq!(token.0, &quot;token123&quot;);
+}
+
+#[tokio::main]
+async fn main() -&gt; Result&lt;(), std::io::Error&gt; {
+    if std::env::var_os(&quot;RUST_LOG&quot;).is_none() {
+        std::env::set_var(&quot;RUST_LOG&quot;, &quot;poem=debug&quot;);
+    }
+    tracing_subscriber::fmt::init();
+
+    let app = Route::new().at(&quot;/&quot;, get(index));
+    let listener = TcpListener::bind(&quot;127.0.0.1:3000&quot;);
+    let server = Server::new(listener).await?;
+    server.run(app).await
+}
+</code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../poem/routing.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a rel="next" href="../poem/responses.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../poem/routing.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a rel="next" href="../poem/responses.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+        <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+    </body>
+</html>
