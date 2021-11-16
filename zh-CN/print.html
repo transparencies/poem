@@ -1012,13 +1012,21 @@ async fn main() -&gt; Result&lt;(), std::io::Error&gt; {
         .title(&quot;Hello World&quot;)
         .server(&quot;http://localhost:3000/api&quot;);
   
-    // 开启Swagger UI
+    // 创建Swagger UI端点
     let ui = api_service.swagger_ui();
+    
+    // 创建OpenApi输出规范的端点
+    let spec = api_service.spec_endpoint();
 
     // 启动服务器，并指定api的根路径为 /api，Swagger UI的路径为 /
     poem::Server::new(listener)
         .await?
-        .run(Route::new().nest(&quot;/api&quot;, api_service).nest(&quot;/&quot;, ui))
+        .run(
+            Route::new()
+            .at(&quot;/openapi.json&quot;, spec)
+            .nest(&quot;/api&quot;, api_service)
+            .nest(&quot;/&quot;, ui)
+        )
         .await
 }
 </code></pre></pre>

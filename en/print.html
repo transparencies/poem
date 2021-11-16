@@ -1069,11 +1069,19 @@ async fn main() -&gt; Result&lt;(), std::io::Error&gt; {
   
     // Enable the Swagger UI
     let ui = api_service.swagger_ui();
+    
+    // Enable the OpenAPI specification
+    let spec = api_service.spec_endpoint();
 
     // Start the server and specify that the root path of the API is /api, and the path of Swagger UI is /
     poem::Server::new(listener)
         .await?
-        .run(Route::new().nest(&quot;/api&quot;, api_service).nest(&quot;/&quot;, ui))
+        .run(
+            Route::new()
+            .at(&quot;/openapi.json&quot;, spec)
+            .nest(&quot;/api&quot;, api_service)
+            .nest(&quot;/&quot;, ui)
+        )
         .await
 }
 </code></pre></pre>
