@@ -144,12 +144,11 @@ poem = &quot;1.0&quot;
 serde = &quot;1.0&quot;
 tokio = { version = &quot;1.12.0&quot;, features = [&quot;rt-multi-thread&quot;, &quot;macros&quot;] }
 </code></pre>
-<h2 id="写一个-endpoint"><a class="header" href="#写一个-endpoint">写一个 endpoint</a></h2>
-<p><code>handler</code> 宏将函数转换为实现 <code>Endpoint</code> 的类型，<code>Endpoint</code> trait 表示
-一种可以处理 HTTP 请求的类型。</p>
-<p>这个函数可以接收一个或多个参数，每个参数都是一个提取器，可以从 HTTP 请求中提取一些东西。</p>
+<h2 id="实现一个endpoint"><a class="header" href="#实现一个endpoint">实现一个Endpoint</a></h2>
+<p><code>handler</code> 宏将函数转换为实现了 <code>Endpoint</code> 的类型，<code>Endpoint</code> trait 表示一种可以处理 HTTP 请求的类型。</p>
+<p>这个函数可以接收一个或多个参数，每个参数都是一个提取器，可以从 HTTP 请求中提取你想要的信息。</p>
 <p>提取器实现了 <code>FromRequest</code> trait，你也可以实现这个 trait 来创建你自己的提取器。</p>
-<p>函数的返回值必须是实现了 <code>IntoResponse</code> Trait 的类型。它可以通过 <code>IntoResponse::into_response</code> 方法将自己转化为一个 HTTP 响应。</p>
+<p>函数的返回值必须是实现了 <code>IntoResponse</code> trait 的类型。它可以通过 <code>IntoResponse::into_response</code> 方法将自己转化为一个 HTTP 响应。</p>
 <p>下面的函数有一个提取器，它从 uri 请求的 query 中提取 <code>name</code> 和 <code>value</code> 参数并返回一个 <code>String</code>，该字符串将被转换为 HTTP 响应。</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -266,7 +265,7 @@ impl Endpoint for MyEndpoint {
 </span></code></pre></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="路由"><a class="header" href="#路由">路由</a></h1>
 <p>路由对象用于将指定路径和方法的请求分派到指定 Endpoint。</p>
-<p>路由对象实际上是一个 Endpoint，它实现了 Endpoint 特性。</p>
+<p>路由对象实际上是一个 Endpoint，它实现了 <code>Endpoint</code> trait。</p>
 <p>在下面的例子中，我们将 <code>/a</code> 和 <code>/b</code> 的请求分派到不同的 Endpoint。</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -557,8 +556,12 @@ fn no_response() {}
 
 <span class="boring">}
 </span></code></pre></pre>
-<h1 id="内置响应"><a class="header" href="#内置响应">内置响应</a></h1>
+<h1 id="内置响应类型"><a class="header" href="#内置响应类型">内置响应类型</a></h1>
 <ul>
+<li>
+<p><strong>Result&lt;T: IntoResponse, E: IntoResponse&gt;</strong></p>
+<p>如果结果为<code>Ok</code>, 则用<code>Ok</code>的值作为响应, 否则使用<code>Err</code>的值。</p>
+</li>
 <li>
 <p><strong>()</strong></p>
 <p>将状态设置为<code>OK</code>，body 为空。</p>
@@ -716,7 +719,7 @@ fn index(data: Vec&lt;u8&gt;) -&gt; Result&lt;Json&lt;i32&gt;&gt; {
 <span class="boring">}
 </span></code></pre></pre>
 <h2 id="自定义错误类型"><a class="header" href="#自定义错误类型">自定义错误类型</a></h2>
-<p>有时我们可以使用自定义错误类型来减少样板代码。</p>
+<p>有时我们可以使用自定义错误类型来减少重复的代码。</p>
 <p>注意：<code>Poem</code> 的错误类型通常只需要实现 <code>IntoResponse</code>。</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -865,7 +868,7 @@ let ep = index.around(extract_token);
 <span class="boring">}
 </span></code></pre></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="协议"><a class="header" href="#协议">协议</a></h1>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="网络套接字"><a class="header" href="#网络套接字">网络套接字</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="websocket"><a class="header" href="#websocket">Websocket</a></h1>
 <p>Websocket 允许在客户端和服务器之间进行双向通信的长连接。</p>
 <p><code>Poem</code> 提供了一个 <code>WebSocket</code> 提取器来创建这个连接。</p>
 <p>当连接升级成功时，调用指定的闭包来发送和接收数据。</p>
@@ -941,8 +944,8 @@ let app = Route::new().at(&quot;/&quot;, get(index));
     .tls(TlsConfig::new().key(KEY).cert(CERT));
 <span class="boring">}
 </span></code></pre></pre>
-<h2 id="tls-重载"><a class="header" href="#tls-重载">TLS 重载</a></h2>
-<p>你可以使用流将最新的 Tls 配置传递给 <code>Poem</code>。</p>
+<h2 id="tls配置热加载"><a class="header" href="#tls配置热加载">TLS配置热加载</a></h2>
+<p>你可以使用异步流将最新的 Tls 配置传递给 <code>Poem</code>。</p>
 <p>以下示例每 1 分钟从文件中加载最新的 TLS 配置：</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]

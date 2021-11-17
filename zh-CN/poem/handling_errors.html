@@ -211,7 +211,7 @@ fn index(data: Vec&lt;u8&gt;) -&gt; Result&lt;Json&lt;i32&gt;&gt; {
 <span class="boring">}
 </span></code></pre></pre>
 <h2 id="自定义错误类型"><a class="header" href="#自定义错误类型">自定义错误类型</a></h2>
-<p>有时我们可以使用自定义错误类型来减少样板代码。</p>
+<p>有时我们可以使用自定义错误类型来减少重复的代码。</p>
 <p>注意：<code>Poem</code> 的错误类型通常只需要实现 <code>IntoResponse</code>。</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]

@@ -163,6 +163,10 @@ fn no_response() {}
 <h1 id="built-in-responses"><a class="header" href="#built-in-responses">Built-in responses</a></h1>
 <ul>
 <li>
+<p><strong>Result&lt;T: IntoResponse, E: IntoResponse&gt;</strong></p>
+<p>if the result is <code>Ok</code>, use the <code>Ok</code> value as the response, otherwise use the <code>Err</code> value.</p>
+</li>
+<li>
 <p><strong>()</strong></p>
 <p>Sets the status to <code>OK</code> with an empty body.</p>
 </li>

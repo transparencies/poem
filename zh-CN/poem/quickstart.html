@@ -141,12 +141,11 @@ poem = &quot;1.0&quot;
 serde = &quot;1.0&quot;
 tokio = { version = &quot;1.12.0&quot;, features = [&quot;rt-multi-thread&quot;, &quot;macros&quot;] }
 </code></pre>
-<h2 id="写一个-endpoint"><a class="header" href="#写一个-endpoint">写一个 endpoint</a></h2>
-<p><code>handler</code> 宏将函数转换为实现 <code>Endpoint</code> 的类型，<code>Endpoint</code> trait 表示
-一种可以处理 HTTP 请求的类型。</p>
-<p>这个函数可以接收一个或多个参数，每个参数都是一个提取器，可以从 HTTP 请求中提取一些东西。</p>
+<h2 id="实现一个endpoint"><a class="header" href="#实现一个endpoint">实现一个Endpoint</a></h2>
+<p><code>handler</code> 宏将函数转换为实现了 <code>Endpoint</code> 的类型，<code>Endpoint</code> trait 表示一种可以处理 HTTP 请求的类型。</p>
+<p>这个函数可以接收一个或多个参数，每个参数都是一个提取器，可以从 HTTP 请求中提取你想要的信息。</p>
 <p>提取器实现了 <code>FromRequest</code> trait，你也可以实现这个 trait 来创建你自己的提取器。</p>
-<p>函数的返回值必须是实现了 <code>IntoResponse</code> Trait 的类型。它可以通过 <code>IntoResponse::into_response</code> 方法将自己转化为一个 HTTP 响应。</p>
+<p>函数的返回值必须是实现了 <code>IntoResponse</code> trait 的类型。它可以通过 <code>IntoResponse::into_response</code> 方法将自己转化为一个 HTTP 响应。</p>
 <p>下面的函数有一个提取器，它从 uri 请求的 query 中提取 <code>name</code> 和 <code>value</code> 参数并返回一个 <code>String</code>，该字符串将被转换为 HTTP 响应。</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]

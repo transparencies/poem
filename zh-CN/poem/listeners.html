@@ -155,8 +155,8 @@
     .tls(TlsConfig::new().key(KEY).cert(CERT));
 <span class="boring">}
 </span></code></pre></pre>
-<h2 id="tls-重载"><a class="header" href="#tls-重载">TLS 重载</a></h2>
-<p>你可以使用流将最新的 Tls 配置传递给 <code>Poem</code>。</p>
+<h2 id="tls配置热加载"><a class="header" href="#tls配置热加载">TLS配置热加载</a></h2>
+<p>你可以使用异步流将最新的 Tls 配置传递给 <code>Poem</code>。</p>
 <p>以下示例每 1 分钟从文件中加载最新的 TLS 配置：</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
