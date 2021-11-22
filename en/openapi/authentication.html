@@ -176,7 +176,7 @@ impl Api {
     #[oai(path = &quot;/repo&quot;, method = &quot;get&quot;)]
     async fn repo_list(
         &amp;self,
-        #[oai(auth(&quot;GithubScope::PublicRepo&quot;))] auth: GithubAuthorization,
+        #[oai(scope(&quot;GithubScope::PublicRepo&quot;))] auth: GithubAuthorization,
     ) -&gt; Result&lt;PlainText&lt;String&gt;&gt; {
         // Use the token in GithubAuthorization to obtain all public repositories from Github.
         todo!()

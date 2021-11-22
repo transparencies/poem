@@ -175,7 +175,7 @@ impl Api {
     #[oai(path = &quot;/repo&quot;, method = &quot;get&quot;)]
     async fn repo_list(
         &amp;self,
-        #[oai(auth(&quot;GithubScope::PublicRepo&quot;))] auth: GithubAuthorization,
+        #[oai(scope(&quot;GithubScope::PublicRepo&quot;))] auth: GithubAuthorization,
     ) -&gt; Result&lt;PlainText&lt;String&gt;&gt; {
         // 使用GithubAuthorization得到的token向Github获取所有公共仓库信息。
         todo!()
