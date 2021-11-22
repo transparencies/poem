@@ -226,6 +226,7 @@ impl MetaSchema {
             max_items,
             min_items,
             unique_items,
+            items,
             ..
         }: MetaSchema,
     ) -> Self {
@@ -258,6 +259,27 @@ impl MetaSchema {
             min_items,
             unique_items
         );
+
+        if let Some(items) = items {
+            if let Some(self_items) = self.items {
+                let items = *items;
+
+                match items {
+                    MetaSchemaRef::Inline(items) => {
+                        self.items = Some(Box::new(self_items.merge(*items)))
+                    }
+                    MetaSchemaRef::Reference(_) => {
+                        self.items = Some(Box::new(MetaSchemaRef::Inline(Box::new(MetaSchema {
+                            one_of: vec![*self_items, items],
+                            ..MetaSchema::ANY
+                        }))));
+                    }
+                }
+            } else {
+                self.items = Some(items);
+            }
+        }
+
         self
     }
 }
@@ -404,6 +426,7 @@ fn serialize_headers<S: Serializer>(
 }
 
 #[derive(Debug, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MetaOperation {
     #[serde(skip)]
     pub method: Method,
@@ -422,6 +445,8 @@ pub struct MetaOperation {
     pub deprecated: bool,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub security: Vec<HashMap<&'static str, Vec<&'static str>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operation_id: Option<&'static str>,
 }
 
 #[derive(Debug, PartialEq)]

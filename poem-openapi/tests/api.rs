@@ -4,10 +4,11 @@ use poem::{
     Endpoint, EndpointExt, IntoEndpoint,
 };
 use poem_openapi::{
+    param::Query,
     payload::{Binary, Json, PlainText},
     registry::{MetaApi, MetaSchema},
     types::Type,
-    ApiRequest, ApiResponse, OpenApi, OpenApiService, ParseRequestError, Tags,
+    ApiRequest, ApiResponse, OpenApi, OpenApiService, ParseRequestError, PoemExtractor, Tags,
 };
 
 #[tokio::test]
@@ -265,13 +266,13 @@ async fn response() {
     #[OpenApi]
     impl Api {
         #[oai(path = "/", method = "get")]
-        async fn test(&self, #[oai(name = "code", in = "query")] code: u16) -> MyResponse {
-            match code {
+        async fn test(&self, code: Query<u16>) -> MyResponse {
+            match code.0 {
                 200 => MyResponse::Ok,
-                409 => MyResponse::AlreadyExists(Json(code)),
+                409 => MyResponse::AlreadyExists(Json(code.0)),
                 _ => MyResponse::Default(
-                    StatusCode::from_u16(code).unwrap(),
-                    PlainText(format!("code: {}", code)),
+                    StatusCode::from_u16(code.0).unwrap(),
+                    PlainText(format!("code: {}", code.0)),
                 ),
             }
         }
@@ -365,8 +366,8 @@ async fn bad_request_handler() {
     #[OpenApi]
     impl Api {
         #[oai(path = "/", method = "get")]
-        async fn test(&self, #[oai(name = "code", in = "query")] code: u16) -> MyResponse {
-            MyResponse::Ok(PlainText(format!("code: {}", code)))
+        async fn test(&self, code: Query<u16>) -> MyResponse {
+            MyResponse::Ok(PlainText(format!("code: {}", code.0)))
         }
     }
 
@@ -396,7 +397,67 @@ async fn bad_request_handler() {
     assert_eq!(resp.content_type(), Some("text/plain"));
     assert_eq!(
         resp.take_body().into_string().await.unwrap(),
-        r#"!!! failed to parse param `code`: Type "integer(uint16)" expects an input value."#
+        r#"!!! Failed to parse parameter `code`: Type "integer(uint16)" expects an input value."#
+    );
+}
+
+#[tokio::test]
+async fn bad_request_handler_for_validator() {
+    #[derive(ApiResponse)]
+    #[oai(bad_request_handler = "bad_request_handler")]
+    enum MyResponse {
+        /// Ok
+        #[oai(status = 200)]
+        Ok(PlainText<String>),
+        /// Already exists
+        #[oai(status = 400)]
+        BadRequest(PlainText<String>),
+    }
+
+    fn bad_request_handler(err: ParseRequestError) -> MyResponse {
+        MyResponse::BadRequest(PlainText(format!("!!! {}", err.to_string())))
+    }
+
+    struct Api;
+
+    #[OpenApi]
+    impl Api {
+        #[oai(path = "/", method = "get")]
+        async fn test(
+            &self,
+            #[oai(validator(maximum(value = "100")))] code: Query<u16>,
+        ) -> MyResponse {
+            MyResponse::Ok(PlainText(format!("code: {}", code.0)))
+        }
+    }
+
+    let ep = OpenApiService::new(Api, "test", "1.0").into_endpoint();
+
+    let mut resp = ep
+        .call(
+            poem::Request::builder()
+                .method(Method::GET)
+                .uri(Uri::from_static("/?code=50"))
+                .finish(),
+        )
+        .await;
+    assert_eq!(resp.status(), StatusCode::OK);
+    assert_eq!(resp.content_type(), Some("text/plain"));
+    assert_eq!(resp.take_body().into_string().await.unwrap(), "code: 50");
+
+    let mut resp = ep
+        .call(
+            poem::Request::builder()
+                .method(Method::GET)
+                .uri(Uri::from_static("/?code=200"))
+                .finish(),
+        )
+        .await;
+    assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(resp.content_type(), Some("text/plain"));
+    assert_eq!(
+        resp.take_body().into_string().await.unwrap(),
+        r#"!!! Failed to parse parameter `code`: verification failed. maximum(100, exclusive: false)"#
     );
 }
 
@@ -407,8 +468,8 @@ async fn poem_extract() {
     #[OpenApi]
     impl Api {
         #[oai(path = "/", method = "get")]
-        async fn test(&self, #[oai(extract)] data: Data<&i32>) {
-            assert_eq!(*data.0, 100);
+        async fn test(&self, data: PoemExtractor<Data<&i32>>) {
+            assert_eq!(*data.0 .0, 100);
         }
     }
 
